@@ -32,6 +32,88 @@ impl Data for ColorData {
 
 }
 
+pub struct ColorDataHSV {
+
+    pub colors: [ColorHSV; 3],
+
+}
+
+impl ColorDataHSV {
+    pub fn new(back: ColorHSV, front: ColorHSV, dest: ColorHSV) -> Self {
+        Self {
+            colors: [
+                back,
+                front,
+                dest,
+            ],
+        }
+    }
+
+}
+
+impl Data for ColorDataHSV {
+    type Inner = ColorHSV;
+
+    fn list(&self) -> &[Self::Inner; 3] {
+        &self.colors
+    }
+
+    fn list_mut(&mut self) -> &mut [Self::Inner; 3] {
+        &mut self.colors
+    }
+
+}
+
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ColorHSV {
+    pub channels: [u16; 3]
+}
+
+impl ColorHSV {
+    pub fn new(h: u16, s: u16, v: u16) -> Self {
+        Self {
+            channels: [h,s,v],
+        }
+    }
+
+    pub fn h(&self) -> u16 {
+        self.channels[0]
+    }
+    pub fn s(&self) -> u16 {
+        self.channels[1]
+    }
+    pub fn v(&self) -> u16 {
+        self.channels[2]
+    }
+
+    pub fn h_mut(&mut self) -> &mut u16 {
+        &mut self.channels[0]
+    }
+    pub fn s_mut(&mut self) -> &mut u16 {
+        &mut self.channels[1]
+    }
+    pub fn v_mut(&mut self) -> &mut u16 {
+        &mut self.channels[2]
+    }
+
+    pub fn red() -> Self {
+        Self { channels: [0,100,100] }
+    }
+    pub fn green() -> Self {
+        Self { channels: [120,100,100] }
+    }
+    pub fn blue() -> Self {
+        Self { channels: [240,100,100] }
+    }
+    pub fn black() -> Self {
+        Self { channels: [0,0,0] }
+    }
+    pub fn white() -> Self {
+        Self { channels: [0,0,100] }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Color {
     pub channels: [u8; 3]

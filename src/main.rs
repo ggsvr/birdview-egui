@@ -1,6 +1,6 @@
 
 use birdview::Context;
-use birdview::{Color, ColorData};
+use birdview::{ColorHSV, ColorDataHSV};
 
 use sdl2::{
     pixels,
@@ -18,6 +18,12 @@ use cv::{
 };
 
 
+enum FrameRef {
+    Raw,
+    Proc
+}
+
+const TOL_DEFAULT: f32 = 0.2;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
 
@@ -39,13 +45,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut frame = Mat::default();
     let mut proc_frame = Mat::default();
 
+    let mut frame_ref = FrameRef::Raw;
+
     // Stuff for encoding to bmp
     let mut framebuffer = Vector::new();
     let format_params = Vector::new();
 
 
 
-    let col_data = ColorData::new(Color::red(), Color::green(), Color::blue());
+    let col_data = ColorDataHSV::new(ColorHSV::red(), ColorHSV::green(), ColorHSV::blue());
+    let mut tolerance = TOL_DEFAULT;
 
 
     let mut event_pump = sdl_context.event_pump()?;
@@ -58,6 +67,26 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
                     break 'running;
                 },
+
+                Event::KeyDown { keycode: Some(key), .. } => {
+                    match key {
+                        Keycode::R => match frame_ref {
+                            FrameRef::Raw => frame_ref = FrameRef::Proc,
+                            FrameRef::Proc => frame_ref = FrameRef::Raw,
+                        },
+                        Keycode::Up => {
+                            tolerance += 0.05;
+                            tolerance = tolerance.clamp(0., 1.);
+                        },
+                        Keycode::Down => {
+                            tolerance -= 0.05;
+                            tolerance = tolerance.clamp(0., 1.);
+                        },
+                        _ => ()
+                    }
+                },
+
+
                 _ => (),
             }
         }
@@ -68,11 +97,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         if !cap.read(&mut frame)? { break 'running }
 
-        birdview::process_image(&frame, &col_data, 50, &mut proc_frame);
+        birdview::process_image(&frame, &col_data, 0.8, &mut proc_frame);
 
         // Ugly, horrendous, scary stuff I have to do because I don't want to handle internal image data
         // Encode to bmp, store in buffer, read from buffer into texture
-        imgcodecs::imencode(".bmp", &proc_frame, &mut framebuffer, &format_params)?;
+        match frame_ref {
+            FrameRef::Raw => { imgcodecs::imencode(
+                ".bmp", &frame, &mut framebuffer, &format_params)?; },
+            FrameRef::Proc => { imgcodecs::imencode(
+                ".bmp", &proc_frame, &mut framebuffer, &format_params)?; },
+        }
 
         let rw_ops = sdl2::rwops::RWops::from_bytes(framebuffer.as_slice())?;
         let texture = rw_ops.load_bmp()?.as_texture(&texture_creator)?;
