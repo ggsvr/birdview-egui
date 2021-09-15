@@ -1,0 +1,19 @@
+cargo-features = ["strip"]
+
+[package]
+name = "birdview"
+version = "0.1.0"
+edition = "2018"
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+sdl2 = {version = "*", features = ["image"]}
+opencv = "0.54"
+cgmath = "*"
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1
