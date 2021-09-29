@@ -126,27 +126,27 @@ impl Color {
         }
     }
 
-    pub fn black() -> Self {
+    pub const fn black() -> Self {
         Self {
             channels: [0; 3]
         }
     }
-    pub fn white() -> Self {
+    pub const fn white() -> Self {
         Self {
             channels: [255; 3]
         }
     }
-    pub fn red() -> Self {
+    pub const fn red() -> Self {
         Self {
             channels: [255, 0, 0]
         }
     }
-    pub fn green() -> Self {
+    pub const fn green() -> Self {
         Self {
             channels: [0, 255, 0]
         }
     }
-    pub fn blue() -> Self {
+    pub const fn blue() -> Self {
         Self {
             channels: [0, 0, 255]
         }
