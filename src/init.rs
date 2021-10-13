@@ -14,7 +14,7 @@ use opencv::{
 };
 use eframe::{egui, epi};
 
-use crate::{Color, ColorData};
+use crate::{Color, ColorData, data::Data};
 
 
 const IMG_SIZE: (usize, usize) = (600, 400);
@@ -57,7 +57,8 @@ impl BirdView {
 
         let pixels: Vec<_> = pixels
             .iter()
-            .map(|p| egui::Color32::from_rgba_unmultiplied(p[2], p[1], p[0], 255))
+            //.map(|p| egui::Color32::from_rgba_unmultiplied(p[2], p[1], p[0], 255))
+            .map(|p| egui::Color32::from_rgb(p[2], p[1], p[0]))
             .collect();
 
         let texture = frame.tex_allocator().alloc_srgba_premultiplied(size, &pixels);
@@ -86,6 +87,11 @@ impl epi::App for BirdView {
             ui.image(self.texture.unwrap().0, self.texture.unwrap().1);
             ui.checkbox(&mut self.is_raw, "Raw");
 
+            ui.color_edit_button_srgb(&mut self.color_data.back_mut().channels);
+            ui.color_edit_button_srgb(&mut self.color_data.front_mut().channels);
+            ui.color_edit_button_srgb(&mut self.color_data.dest_mut().channels);
+
+            ui.add(egui::Slider::new(&mut self.tolerance, 0..=255));
         });
 
         ctx.request_repaint();

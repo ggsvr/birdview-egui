@@ -48,12 +48,10 @@ pub fn process_image(src: &Mat, color_data: &ColorData, tolerance: u8, dst: &mut
         } else {
             let tmp = result;
             result = Mat::default();
-            println!("tmp: {}, mask: {}, result: {}", tmp.typ().unwrap(), mask.typ().unwrap(), result.typ().unwrap());
             core::bitwise_or(&tmp, &mask, &mut result, &core::no_array().unwrap()).unwrap();
         }
     }
-    println!("{}", result.typ().unwrap());
     opencv::imgproc::cvt_color(&result, dst, opencv::imgproc::COLOR_GRAY2BGR, 3).unwrap();
-    *dst = result;
+    //*dst = result;
 
 }
