@@ -12,7 +12,8 @@ use opencv::core::Mat;
 
 
 use opencv::core;
-use opencv::core::MatTraitConst;
+use opencv::features2d::{SimpleBlobDetector, SimpleBlobDetector_Params,};
+use opencv::types::{PtrOfFeature2D, PtrOfSimpleBlobDetector};
 
 pub fn process_image(src: &Mat, color_data: &ColorData, tolerance: u8, dst: &mut Mat) {
     //let size = src.size().unwrap();
@@ -27,8 +28,20 @@ pub fn process_image(src: &Mat, color_data: &ColorData, tolerance: u8, dst: &mut
 
     //let mut hsv_img = Mat::default();
     let mut result = Mat::default();
+    let mut output = PointData::new();
 
     //imgproc::cvt_color(src, &mut hsv_img, imgproc::COLOR_BGR2HSV, 0).unwrap();
+
+    let mut blob_params = SimpleBlobDetector_Params::default().unwrap();
+    blob_params.filter_by_color = true;
+    blob_params.blob_color = 255;
+
+    blob_params.filter_by_area = false;
+    blob_params.filter_by_circularity = false;
+    blob_params.filter_by_convexity = false;
+    blob_params.filter_by_inertia = false;
+
+    let blob_detector_ptr = SimpleBlobDetector::create(blob_params).unwrap();
 
 
     for (i, color) in color_data.colors.iter().enumerate() {
@@ -42,6 +55,12 @@ pub fn process_image(src: &Mat, color_data: &ColorData, tolerance: u8, dst: &mut
 
         let mut mask = Mat::default();
         core::in_range(src, &lower, &upper, &mut mask).unwrap();
+
+        let mut keypoints: core::Vector<core::KeyPoint> = core::Vector::new();
+
+
+
+
 
         if i == 0 {
             result = mask;

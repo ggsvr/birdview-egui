@@ -10,7 +10,6 @@ use opencv::{
     core::{Vector, Mat},
     videoio::VideoCapture,
     prelude::*,
-    imgcodecs,
 };
 use eframe::{egui, epi};
 
