@@ -3,6 +3,7 @@ pub use crate::math::Point;
 
 pub type Pt = Option<Point>;
 
+#[derive(Debug, Clone)]
 pub struct PointData {
     pub points: [Pt; 3],
 }

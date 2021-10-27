@@ -12,10 +12,10 @@ use opencv::core::Mat;
 
 
 use opencv::core;
-use opencv::features2d::{SimpleBlobDetector, SimpleBlobDetector_Params,};
-use opencv::types::{PtrOfFeature2D, PtrOfSimpleBlobDetector};
+use opencv::features2d::{self, SimpleBlobDetector, SimpleBlobDetector_Params};
+use opencv::prelude::*;
 
-pub fn process_image(src: &Mat, color_data: &ColorData, tolerance: u8, dst: &mut Mat) {
+pub fn process_image(src: &Mat, color_data: &ColorData, tolerance: u8, dst: &mut Mat) -> PointData {
     //let size = src.size().unwrap();
     //let (width, height) = (size.width, size.height);
 
@@ -41,7 +41,7 @@ pub fn process_image(src: &Mat, color_data: &ColorData, tolerance: u8, dst: &mut
     blob_params.filter_by_convexity = false;
     blob_params.filter_by_inertia = false;
 
-    let blob_detector_ptr = SimpleBlobDetector::create(blob_params).unwrap();
+    let mut blob_detector = SimpleBlobDetector::create(blob_params).unwrap();
 
 
     for (i, color) in color_data.colors.iter().enumerate() {
@@ -58,7 +58,12 @@ pub fn process_image(src: &Mat, color_data: &ColorData, tolerance: u8, dst: &mut
 
         let mut keypoints: core::Vector<core::KeyPoint> = core::Vector::new();
 
+        blob_detector.detect(&mask, &mut keypoints, &core::no_array().unwrap()).unwrap();
 
+        output.points[i] = match keypoints.get(0) {
+            Ok(k) => Some(Point::new(k.pt.x.into(), k.pt.y.into())),
+            Err(_) => None,
+        };
 
 
 
@@ -71,6 +76,6 @@ pub fn process_image(src: &Mat, color_data: &ColorData, tolerance: u8, dst: &mut
         }
     }
     opencv::imgproc::cvt_color(&result, dst, opencv::imgproc::COLOR_GRAY2BGR, 3).unwrap();
-    //*dst = result;
+    output
 
 }

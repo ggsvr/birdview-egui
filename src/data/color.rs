@@ -1,5 +1,6 @@
 use super::Data;
 
+#[derive(Debug, Clone)]
 pub struct ColorData {
 
     pub colors: [Color; 3],

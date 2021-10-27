@@ -11,6 +11,7 @@ edition = "2018"
 [dependencies]
 eframe = "0.14"
 image = "*"
+imageproc = { git = "https://github.com/image-rs/imageproc.git" } 
 opencv = "0.54"
 cgmath = "*"
 
