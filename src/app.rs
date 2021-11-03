@@ -1,6 +1,4 @@
 
-//use sdl2::image;
-
 #[cfg(not(target_os="linux"))]
 pub const CAP_BACKEND: i32 = opencv::videoio::CAP_ANY;
 #[cfg(target_os="linux")]
