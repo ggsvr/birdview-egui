@@ -12,6 +12,7 @@ edition = "2018"
 eframe = "0.14"
 image = "*"
 opencv = "0.54"
+rayon = "1.5"
 cgmath = "*"
 
 [profile.release]

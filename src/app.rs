@@ -10,6 +10,8 @@ use cgmath::MetricSpace;
 use image::GenericImageView;
 use image::GenericImage;
 
+use rayon::prelude::*;
+
 use opencv::{
     core::Mat,
     videoio::VideoCapture,
@@ -61,8 +63,7 @@ impl BirdView {
         let size = (size.width as usize, size.height as usize);
 
         let pixels: Vec<_> = pixels
-            .iter()
-            //.map(|p| egui::Color32::from_rgba_unmultiplied(p[2], p[1], p[0], 255))
+            .par_iter()
             .map(|p| egui::Color32::from_rgb(p[2], p[1], p[0]))
             .collect();
 
