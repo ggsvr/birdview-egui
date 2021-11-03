@@ -6,20 +6,18 @@ pub const CAP_BACKEND: i32 = opencv::videoio::CAP_ANY;
 #[cfg(target_os="linux")]
 pub const CAP_BACKEND: i32 = opencv::videoio::CAP_V4L2;
 
-use std::convert::TryInto;
 use cgmath::MetricSpace;
 use image::GenericImageView;
 use image::GenericImage;
 
 use opencv::{
-    core::{Vector, Mat},
+    core::Mat,
     videoio::VideoCapture,
     prelude::*,
 };
 use eframe::{egui, epi};
 
-use crate::{Color, ColorData, PointData, data::Data};
-use crate::math;
+use crate::{Color, ColorData, PointData, data::Data, img, math};
 
 
 const IMG_SIZE: (usize, usize) = (600, 400);
@@ -31,7 +29,6 @@ pub struct BirdView {
     raw_frame: Mat,
     processed_frame: Mat,
     is_raw: bool,
-    framebuffer: Vector<u8>,
     tolerance: u8,
     texture: Option<(egui::TextureId, egui::Vec2)>,
 }
@@ -45,19 +42,19 @@ impl BirdView {
             raw_frame: Mat::default(),
             processed_frame: Mat::default(),
             is_raw: true,
-            framebuffer: Vector::new(),
             tolerance: 0,
             texture: None,
         })
     }
 
-    fn update_texture(&mut self, frame: &mut epi::Frame<'_>) {
-        self.camera.read(&mut self.raw_frame).unwrap();
+    fn update_texture(&mut self, frame: &mut epi::Frame) {
+        self.camera.read(&mut self.raw_frame).unwrap(); // read camera input to raw frame
 
-        let points = crate::process_image(&self.raw_frame, &self.color_data, self.tolerance, &mut self.processed_frame);
-        //println!("{:?}", points);
+        //process image and get points
+        let points = img::process_image(&self.raw_frame, &self.color_data, self.tolerance, &mut self.processed_frame);
 
         let frame_ref = if self.is_raw { &self.raw_frame } else { &self.processed_frame };
+
 
         let pixels: &[opencv::core::Vec3b] = frame_ref.data_typed().unwrap();
         let size = frame_ref.size().unwrap();
@@ -73,6 +70,10 @@ impl BirdView {
         let size = egui::Vec2::new(size.0 as f32, size.1 as f32);
 
         self.point_data = points;
+
+        if let Some((texture, _)) = self.texture {
+            frame.tex_allocator().free(texture);
+        }
         self.texture = Some((texture, size));
 
     }
@@ -84,11 +85,11 @@ impl epi::App for BirdView {
         "BirdView Client"
     }
 
-    fn setup(&mut self, _ctx: &egui::CtxRef, _frame: &mut epi::Frame<'_>, _storage: Option<&dyn epi::Storage>) {
+    fn setup(&mut self, _ctx: &egui::CtxRef, _frame: &mut epi::Frame, _storage: Option<&dyn epi::Storage>) {
         
     }
 
-    fn update(&mut self, ctx: &egui::CtxRef, frame: &mut epi::Frame<'_>) {
+    fn update(&mut self, ctx: &egui::CtxRef, frame: &mut epi::Frame) {
 
         self.update_texture(frame);
 
