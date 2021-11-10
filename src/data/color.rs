@@ -34,7 +34,7 @@ impl Data for ColorData {
 }
 
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Color {
     pub channels: [u8; 3]
 }

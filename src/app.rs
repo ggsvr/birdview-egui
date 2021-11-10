@@ -50,12 +50,13 @@ impl BirdView {
     fn update_texture(&mut self, frame: &mut epi::Frame) {
         self.camera.read(&mut self.raw_frame).unwrap(); // read camera input to raw frame
 
-        //process image and get points
-        let points = img::process_image(&self.raw_frame, &self.color_data, self.tolerance, &mut self.processed_frame);
+        // process image and get points, storing in self
+        self.point_data = img::process_image(&self.raw_frame, &self.color_data, self.tolerance, &mut self.processed_frame);
 
+        // choose frame based on the user preference
         let frame_ref = if self.is_raw { &self.raw_frame } else { &self.processed_frame };
 
-
+        // convert from opencv array to egui texture
         let pixels: &[opencv::core::Vec3b] = frame_ref.data_typed().unwrap();
         let size = frame_ref.size().unwrap();
         let size = (size.width as usize, size.height as usize);
@@ -68,13 +69,35 @@ impl BirdView {
         let texture = frame.tex_allocator().alloc_srgba_premultiplied(size, &pixels);
         let size = egui::Vec2::new(size.0 as f32, size.1 as f32);
 
-        self.point_data = points;
 
         if let Some((texture, _)) = self.texture {
             frame.tex_allocator().free(texture);
         }
         self.texture = Some((texture, size));
 
+    }
+
+    fn save_image(&self) {
+        let mut buffer = opencv::core::Vector::new();
+        opencv::imgcodecs::imencode(".bmp", &self.raw_frame, &mut buffer, &opencv::core::Vector::new()).unwrap();
+
+        let img = image::load_from_memory(buffer.as_slice()).unwrap();
+        let mut out = img.clone();
+
+        for pixel in img.pixels() {
+            let pt1 = math::Point::new(pixel.0 as f64, pixel.1 as f64);
+
+            for pt in self.point_data.list() {
+                if let Some(pt2) = *pt {
+                    if pt1.distance(pt2) < 5.0 {
+                        out.put_pixel(pixel.0, pixel.1, image::Rgba([255, 255, 255, 255]));
+                    }
+                }
+            }
+
+        }
+
+        out.save_with_format("./points.jpeg", image::ImageFormat::Jpeg).unwrap();
     }
 }
 
@@ -94,7 +117,16 @@ impl epi::App for BirdView {
 
         egui::CentralPanel::default().show(ctx, |ui| {
 
-            ui.image(self.texture.unwrap().0, self.texture.unwrap().1);
+            let response = ui.image(self.texture.unwrap().0, self.texture.unwrap().1);
+            let pointer = ui.input().pointer.hover_pos();
+
+            if let Some(pos) = pointer {
+                if response.rect.contains(pos) { println!("yes"); }
+                else { println!("no") }
+
+            } else { println!("Can't get pointer pos"); }
+
+
             ui.checkbox(&mut self.is_raw, "Raw");
 
             ui.color_edit_button_srgb(&mut self.color_data.back_mut().channels);
@@ -104,29 +136,7 @@ impl epi::App for BirdView {
             ui.add(egui::Slider::new(&mut self.tolerance, 0..=255));
 
             if ui.button("Save Points").clicked() {
-
-                let mut buffer = opencv::core::Vector::new();
-                opencv::imgcodecs::imencode(".bmp", &self.raw_frame, &mut buffer, &opencv::core::Vector::new()).unwrap();
-
-                let img = image::load_from_memory(buffer.as_slice()).unwrap();
-                let mut out = img.clone();
-
-                for pixel in img.pixels() {
-                    let pt1 = math::Point::new(pixel.0 as f64, pixel.1 as f64);
-
-                    for pt in self.point_data.list() {
-                        if let Some(pt2) = *pt {
-                            if pt1.distance(pt2) < 5.0 {
-                                out.put_pixel(pixel.0, pixel.1, image::Rgba([255, 255, 255, 255]));
-                            }
-                        }
-                    }
-
-                }
-
-
-
-                out.save_with_format("./points.jpeg", image::ImageFormat::Jpeg).unwrap();
+                self.save_image();
             }
         });
 

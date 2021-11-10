@@ -1,28 +1,16 @@
 use crate::data::{Color, ColorData, Point, PointData};
 use opencv::core::Mat;
 
-use opencv::core;
+use opencv::core::{self, Ptr};
 use opencv::features2d::{SimpleBlobDetector, SimpleBlobDetector_Params};
 use opencv::prelude::*;
 
+#[inline(always)]
+fn lower_upper(color: Color, tolerance: u8) -> (Color, Color) {
+    (color - tolerance/2, color + tolerance/2)
+}
 
-pub fn process_image(src: &Mat, color_data: &ColorData, tolerance: u8, dst: &mut Mat) -> PointData {
-    //let size = src.size().unwrap();
-    //let (width, height) = (size.width, size.height);
-
-    let lower_upper = |x: Color| {
-        //let diff = (x as f32 * (tolerance/2.0)) as u16;
-        let lower = x - tolerance/2;
-        let upper = x + tolerance/2;
-        (lower, upper)
-    };
-
-    //let mut hsv_img = Mat::default();
-    let mut result = Mat::default();
-    let mut output = PointData::new();
-
-    //imgproc::cvt_color(src, &mut hsv_img, imgproc::COLOR_BGR2HSV, 0).unwrap();
-
+fn create_blob_detector() -> Ptr<SimpleBlobDetector> {
     let mut blob_params = SimpleBlobDetector_Params::default().unwrap();
     blob_params.filter_by_color = true;
     blob_params.blob_color = 255;
@@ -32,14 +20,22 @@ pub fn process_image(src: &Mat, color_data: &ColorData, tolerance: u8, dst: &mut
     blob_params.filter_by_convexity = false;
     blob_params.filter_by_inertia = false;
 
-    let mut blob_detector = SimpleBlobDetector::create(blob_params).unwrap();
+    SimpleBlobDetector::create(blob_params).unwrap()
+}
+
+pub fn process_image(src: &Mat, color_data: &ColorData, tolerance: u8, dst: &mut Mat) -> PointData {
+
+
+    let mut result = Mat::default();
+    let mut output = PointData::new();
+
+
+    let mut blob_detector = create_blob_detector();
 
 
     for (i, color) in color_data.colors.iter().enumerate() {
-        //let (r_lower, r_upper) = lower_upper(color.r() as u16);
-        //let (g_lower, g_upper) = lower_upper(color.g() as u16);
-        //let (b_lower, b_upper) = lower_upper(color.b() as u16);
-        let (lower, upper) = lower_upper(*color);
+
+        let (lower, upper) = lower_upper(*color, tolerance);
         let lower = core::Scalar::from((lower.b().into(), lower.g().into(), lower.r().into()));
         let upper= core::Scalar::from((upper.b().into(), upper.g().into(), upper.r().into()));
 
