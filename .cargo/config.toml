@@ -1,2 +1,0 @@
-[env]
-OPENCV_MODULE_WHITELIST = "core,imgproc,features2d,flann,videoio,imgcodecs"

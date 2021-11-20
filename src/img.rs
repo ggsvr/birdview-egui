@@ -45,7 +45,7 @@ pub fn process_image(src: &Mat, color_data: &ColorData, tolerance: u8, dst: &mut
 
         let mut keypoints: core::Vector<core::KeyPoint> = core::Vector::new();
 
-        blob_detector.detect(&mask, &mut keypoints, &core::no_array().unwrap()).unwrap();
+        blob_detector.detect(&mask, &mut keypoints, &core::no_array()).unwrap();
 
         output.points[i] = match keypoints.get(0) {
             Ok(k) => Some(Point::new(k.pt.x.into(), k.pt.y.into())),
@@ -59,7 +59,7 @@ pub fn process_image(src: &Mat, color_data: &ColorData, tolerance: u8, dst: &mut
         } else {
             let tmp = result;
             result = Mat::default();
-            core::bitwise_or(&tmp, &mask, &mut result, &core::no_array().unwrap()).unwrap();
+            core::bitwise_or(&tmp, &mask, &mut result, &core::no_array()).unwrap();
         }
     }
     opencv::imgproc::cvt_color(&result, dst, opencv::imgproc::COLOR_GRAY2BGR, 3).unwrap();

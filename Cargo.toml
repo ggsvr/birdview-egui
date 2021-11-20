@@ -11,7 +11,7 @@ edition = "2018"
 [dependencies]
 eframe = "0.14"
 image = "*"
-opencv = "0.54"
+opencv = { version = "0.60", default-features = false, features = ["imgproc", "features2d", "flann", "videoio", "imgcodecs"]}
 rayon = "1.5"
 cgmath = "*"
 
