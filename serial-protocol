@@ -1,0 +1,3 @@
+SERIAL PROTOCOL
+
+DATA: "{back.x},{back.y};{front.x},{front.y};{dest.x},{dest.y}"
