@@ -3,7 +3,6 @@
 pub mod data;
 pub mod app;
 pub mod img;
-mod colorpicker;
 mod math;
 
 pub use app::*;

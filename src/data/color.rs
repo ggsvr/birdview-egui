@@ -18,6 +18,7 @@ impl ColorData {
         }
     }
 
+
 }
 
 impl Data for ColorData {

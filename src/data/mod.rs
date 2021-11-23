@@ -3,6 +3,7 @@ pub mod point;
 pub use color::*;
 pub use point::*;
 
+
 pub trait Data {
     type Inner;
 
@@ -28,4 +29,6 @@ pub trait Data {
     fn dest_mut(&mut self) -> &mut Self::Inner {
         &mut self.list_mut()[2]
     }
+
+
 }

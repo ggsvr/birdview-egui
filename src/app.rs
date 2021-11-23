@@ -7,6 +7,7 @@ pub const CAP_BACKEND: i32 = opencv::videoio::CAP_V4L2;
 use cgmath::MetricSpace;
 use image::GenericImageView;
 use image::GenericImage;
+use serialport::SerialPort;
 
 use rayon::prelude::*;
 
@@ -31,10 +32,11 @@ pub struct BirdView {
     is_raw: bool,
     tolerance: u8,
     texture: Option<(egui::TextureId, egui::Vec2)>,
+    port: Box<dyn SerialPort>,
 }
 
 impl BirdView {
-    pub fn new() -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn new(port: Box<dyn SerialPort>) -> Result<Self, Box<dyn std::error::Error>> {
         Ok(Self {
             camera: VideoCapture::new(0, CAP_BACKEND)?,
             color_data: ColorData::new(Color::black(), Color::black(), Color::black()),
@@ -44,6 +46,7 @@ impl BirdView {
             is_raw: true,
             tolerance: 0,
             texture: None,
+            port,
         })
     }
 
@@ -114,6 +117,10 @@ impl epi::App for BirdView {
     fn update(&mut self, ctx: &egui::CtxRef, frame: &mut epi::Frame) {
 
         self.update_texture(frame);
+
+        if let Err(e) = self.point_data.write_serial(&mut *self.port) {
+            eprintln!("data not send over serial: {}", e);
+        }
 
         egui::CentralPanel::default().show(ctx, |ui| {
 

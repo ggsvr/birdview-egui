@@ -1,4 +1,5 @@
 use super::Data;
+use serialport::SerialPort;
 pub use crate::math::Point;
 
 pub type Pt = Option<Point>;
@@ -19,6 +20,23 @@ impl PointData {
         Self {
             points: [back, front, dest]
         }
+    }
+
+    pub fn write_serial(&self, port: &mut dyn SerialPort) -> Result<(), Box<dyn std::error::Error>> {
+        let back = self.back().ok_or("missing back point")?;
+        let front = self.front().ok_or("missing front point")?;
+        let dest = self.dest().ok_or("missing dest point")?;
+
+        let data = format!("{},{};{},{};{},{}",
+            back.x, back.y,
+            front.x, front.y,
+            dest.x, dest.y
+        ).into_bytes();
+
+        port.write(&data)?;
+
+
+        Ok(())
     }
 }
 
