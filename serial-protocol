@@ -1,3 +1,6 @@
 SERIAL PROTOCOL
 
-DATA: "{back.x},{back.y};{front.x},{front.y};{dest.x},{dest.y}"
+
+DATA: "{F:back.x},{F:back.y};{F:front.x},{F:front.y};{F:dest.x},{F:dest.y}!"
+F: Float with 2 decimal places
+!: Terminator Character

@@ -27,7 +27,7 @@ impl PointData {
         let front = self.front().ok_or("missing front point")?;
         let dest = self.dest().ok_or("missing dest point")?;
 
-        let data = format!("{},{};{},{};{},{}",
+        let data = format!("{:.2},{:.2};{:.2},{:.2};{:.2},{:.2}!",
             back.x, back.y,
             front.x, front.y,
             dest.x, dest.y

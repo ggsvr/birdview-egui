@@ -80,6 +80,47 @@ impl BirdView {
 
     }
 
+    fn set_color_from_pointer(&mut self, rect: egui::Rect, ctx: &egui::CtxRef)  {
+        use egui::Key;
+        let input = ctx.input();
+
+        let b_down = input.key_pressed(Key::B);
+        let f_down = input.key_pressed(Key::F);
+        let d_down = input.key_pressed(Key::D);
+
+        if b_down || f_down || d_down {
+
+            let pointer = input.pointer.hover_pos();
+            if let Some(pointer) = pointer {
+
+                if !rect.contains(pointer) { return }
+
+                let offset = rect.left_top() - pointer;
+                let offset = (offset.x.abs() as u32, offset.y.abs() as u32);
+
+                let mut buffer = opencv::core::Vector::new();
+                opencv::imgcodecs::imencode(".bmp", &self.raw_frame, &mut buffer, &opencv::core::Vector::new()).unwrap();
+
+                let img = image::load_from_memory(buffer.as_slice()).unwrap();
+
+                let color = img.get_pixel(offset.0, offset.1);
+                let color = Color::new(color.0[0], color.0[1], color.0[2]);
+
+                if b_down {
+                    *self.color_data.back_mut() = color;
+                }
+                if f_down {
+                    *self.color_data.front_mut() = color;
+                }
+                if d_down {
+                    *self.color_data.dest_mut() = color;
+                }
+            }
+
+        } 
+
+    }
+
     fn save_image(&self) {
         let mut buffer = opencv::core::Vector::new();
         opencv::imgcodecs::imencode(".bmp", &self.raw_frame, &mut buffer, &opencv::core::Vector::new()).unwrap();
@@ -125,20 +166,21 @@ impl epi::App for BirdView {
         egui::CentralPanel::default().show(ctx, |ui| {
 
             let response = ui.image(self.texture.unwrap().0, self.texture.unwrap().1);
-            let pointer = ui.input().pointer.hover_pos();
+            self.set_color_from_pointer(response.rect, ctx);
+            //let pointer = ui.input().pointer.hover_pos();
 
-            if let Some(pos) = pointer {
-                if response.rect.contains(pos) { println!("yes"); }
-                else { println!("no") }
+            //if let Some(pos) = pointer {
+            //    if response.rect.contains(pos) { println!("yes"); }
+            //    else { println!("no") }
 
-            } else { println!("Can't get pointer pos"); }
+            //} else { println!("Can't get pointer pos"); }
 
 
             ui.checkbox(&mut self.is_raw, "Raw");
 
-            ui.color_edit_button_srgb(&mut self.color_data.back_mut().channels);
-            ui.color_edit_button_srgb(&mut self.color_data.front_mut().channels);
-            ui.color_edit_button_srgb(&mut self.color_data.dest_mut().channels);
+            //ui.color_edit_button_srgb(&mut self.color_data.back_mut().channels);
+            //ui.color_edit_button_srgb(&mut self.color_data.front_mut().channels);
+            //ui.color_edit_button_srgb(&mut self.color_data.dest_mut().channels);
 
             ui.add(egui::Slider::new(&mut self.tolerance, 0..=255));
 
